@@ -3,10 +3,13 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 
-#include "esp_intr.h"
+//#include "esp_intr.h"
 #include "soc/dport_reg.h"
+#include <soc/gpio_sig_map.h>
+#include <soc/io_mux_reg.h>
+#include <soc/soc.h>
 #include "driver/gpio.h"
-
+#include "esp_intr_alloc.h" 
 #include "ESP32SJA1000.h"
 
 #define REG_BASE                   0x3ff6b000
@@ -58,13 +61,16 @@ int ESP32SJA1000Class::begin(long baudRate)
 
   // RX pin
   gpio_set_direction(_rxPin, GPIO_MODE_INPUT);
-  gpio_matrix_in(_rxPin, CAN_RX_IDX, 0);
-  gpio_pad_select_gpio(_rxPin);
+  //gpio_matrix_in(_rxPin, CAN_RX_IDX, 0);
+gpio_iomux_in(_rxPin, CAN_RX_IDX);
+  //gpio_pad_select_gpio(_rxPin);
+esp_rom_gpio_pad_select_gpio(_rxPin);
 
   // TX pin
   gpio_set_direction(_txPin, GPIO_MODE_OUTPUT);
-  gpio_matrix_out(_txPin, CAN_TX_IDX, 0, 0);
-  gpio_pad_select_gpio(_txPin);
+  //gpio_matrix_out(_txPin, CAN_TX_IDX, 0, 0);
+gpio_iomux_out(_txPin, CAN_TX_IDX, false);  
+  esp_rom_gpio_pad_select_gpio(_txPin);
 
   modifyRegister(REG_CDR, 0x80, 0x80); // pelican mode
   modifyRegister(REG_BTR0, 0xc0, 0x40); // SJW = 1
